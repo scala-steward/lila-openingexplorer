@@ -65,5 +65,5 @@ def send(batch):
 
     t = new_t
 
-for batch in grouped((pgn for pgn in split_pgn(f) if has_rating(pgn)), 50):
+for batch in grouped((pgn for pgn in split_pgn(f) if has_rating(pgn)), 100):
     send(batch)

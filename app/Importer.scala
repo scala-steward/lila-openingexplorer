@@ -36,7 +36,7 @@ final class Importer(
   private val masterInitBoard = chess.Board.init(chess.variant.Standard)
 
   def master(text: String): (Unit, Int) = Time {
-    val cache = scala.collection.mutable.Map[PositionHash, SubEntry]()
+    val cache = scala.collection.mutable.Map[List[Byte], SubEntry]()
 
     val pgns = text.split(batchSeparator)
     pgns flatMap { pgn =>
@@ -52,10 +52,11 @@ final class Importer(
           s"Invalid initial position ${Forsyth >> replay.setup.situation}".failureNel
         else scalaz.Success {
           collectHashes(replay, MasterDatabase.hash) foreach { hash =>
-            if (cache.contains(hash))
-              cache.update(hash, cache(hash).withGameRef(gameRef))
+            val h = hash.toList
+            if (cache.contains(h))
+              cache.update(h, cache(h).withGameRef(gameRef))
             else
-              cache.update(hash, masterDb.probe(hash).withGameRef(gameRef))
+              cache.update(h, masterDb.probe(hash).withGameRef(gameRef))
           }
 
           pgnDb.store(gameRef.gameId, parsed, replay)

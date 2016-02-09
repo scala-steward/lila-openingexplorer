@@ -45,10 +45,10 @@ final class MasterDatabase extends MasterDatabasePacker {
     })
   }
 
-  def mergeBulk(bulk: Array[(PositionHash, SubEntry)]) = {
+  def mergeBulk(bulk: Array[(List[Byte], SubEntry)]) = {
     // keys and values are sent alternatingly
     db.set((bulk.map { case (h, e) =>
-      Array(h, pack(e))
+      Array(h.toArray, pack(e))
     }).flatten, Atomicity.NONE)
   }
 
