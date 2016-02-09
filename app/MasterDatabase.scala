@@ -2,7 +2,7 @@ package lila.openingexplorer
 
 import java.io.File
 
-import fm.last.commons.kyoto.{ KyotoDb, WritableVisitor }
+import fm.last.commons.kyoto.{ KyotoDb, WritableVisitor, Atomicity }
 import fm.last.commons.kyoto.factory.{ KyotoDbBuilder, Mode, PageComparator }
 
 import chess.{Hash, Situation, MoveOrDrop, PositionHash}
@@ -21,7 +21,7 @@ final class MasterDatabase extends MasterDatabasePacker {
 
   def probe(situation: Situation): SubEntry = probe(MasterDatabase.hash(situation))
 
-  private def probe(h: PositionHash): SubEntry = {
+  def probe(h: PositionHash): SubEntry = {
     Option(db.get(h)) match {
       case Some(bytes) => unpack(bytes)
       case None        => SubEntry.empty
@@ -43,6 +43,13 @@ final class MasterDatabase extends MasterDatabasePacker {
 
       def emptyRecord(key: PositionHash): Array[Byte] = freshRecord
     })
+  }
+
+  def mergeBulk(bulk: Array[(PositionHash, SubEntry)]) = {
+    // keys and values are sent alternatingly
+    db.set((bulk.map { case (h, e) =>
+      Array(h, pack(e))
+    }).flatten, Atomicity.NONE)
   }
 
   def close = {
