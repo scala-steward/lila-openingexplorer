@@ -75,8 +75,7 @@ class WebApi @Inject() (
 
   def putMaster = Action(parse.tolerantText) { implicit req =>
     importer.master(req.body) match {
-      case (Success(_), ms)      => Ok(s"$ms ms")
-      case (Failure(errors), ms) => BadRequest(errors.list.mkString)
+      case (_, ms)      => Ok(s"$ms ms")
     }
   }
 

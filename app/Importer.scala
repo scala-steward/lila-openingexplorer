@@ -13,10 +13,10 @@ final class Importer(
     lichessDb: LichessDatabase,
     pgnDb: PgnDatabase) extends Validation with scalaz.syntax.ToValidationOps {
 
-  private val lichessSeparator = "\n\n\n"
+  private val batchSeparator = "\n\n\n"
 
   def lichess(variant: Variant, text: String): (Unit, Int) = Time {
-    val pgns = text.split(lichessSeparator)
+    val pgns = text.split(batchSeparator)
     pgns flatMap { origPgn =>
       val pgn = if (variant.exotic) s"[Variant ${variant.name}]\n$origPgn" else origPgn
       process(pgn, fastPgn = true) match {
@@ -35,8 +35,16 @@ final class Importer(
 
   private val masterInitBoard = chess.Board.init(chess.variant.Standard)
 
-  def master(pgn: String): (Valid[Unit], Int) = Time {
-    process(pgn, fastPgn = false) flatMap {
+  def master(text: String): (Unit, Int) = Time {
+    val pgns = text.split(batchSeparator)
+    pgns flatMap { pgn =>
+      process(pgn, fastPgn = false) match {
+        case scalaz.Success(processed) => Some(processed)
+        case scalaz.Failure(errors) =>
+          play.api.Logger("importer").warn(errors.list mkString ", ")
+          None
+      }
+    } foreach {
       case Processed(parsed, replay, gameRef) =>
         if ((Forsyth >> replay.setup.situation) != Forsyth.initial)
           s"Invalid initial position ${Forsyth >> replay.setup.situation}".failureNel
