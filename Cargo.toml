@@ -55,4 +55,4 @@ name = "benches"
 harness = false
 
 [build-dependencies]
-vergen = { version = "8.2.4", features = ["git", "gitcl"] }
+vergen = { version = "8.3.1", features = ["git", "gitcl"] }
