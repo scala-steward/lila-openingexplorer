@@ -183,6 +183,7 @@ pub enum Status {
     Cheat,
     NoStart,
     UnknownFinish,
+    InsufficientMaterialClaim,
     VariantEnd,
 }
 
