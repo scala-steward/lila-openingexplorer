@@ -43,7 +43,7 @@ impl MastersImporter {
             });
         }
 
-        if body.game.date.is_definitely_after(LaxDate::tomorrow()) {
+        if body.game.date > LaxDate::tomorrow() {
             return Err(Error::RejectedDate {
                 id: body.id,
                 date: body.game.date,

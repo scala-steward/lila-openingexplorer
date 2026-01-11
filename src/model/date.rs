@@ -1,4 +1,10 @@
-use std::{cmp::min, convert::TryFrom, fmt, num::NonZeroU8, str::FromStr};
+use std::{
+    cmp::{Ordering, min},
+    convert::TryFrom,
+    fmt,
+    num::NonZeroU8,
+    str::FromStr,
+};
 
 use thiserror::Error;
 use time::{OffsetDateTime, PrimitiveDateTime};
@@ -40,27 +46,6 @@ impl LaxDate {
             day: Some(NonZeroU8::new(utc_date.day()).expect("1-based day")),
         }
     }
-
-    pub fn is_definitely_after(self, other: LaxDate) -> bool {
-        // Year
-        if self.year > other.year {
-            return true;
-        }
-
-        // Month
-        let (Some(month), Some(other_month)) = (self.month, other.month) else {
-            return false;
-        };
-        if month > other_month {
-            return true;
-        }
-
-        // Day
-        let (Some(day), Some(other_day)) = (self.day, other.day) else {
-            return false;
-        };
-        day > other_day
-    }
 }
 
 impl FromStr for LaxDate {
@@ -84,6 +69,22 @@ impl FromStr for LaxDate {
                 .and_then(|d| d.parse::<NonZeroU8>().ok())
                 .filter(|&d| d.get() <= 31),
         })
+    }
+}
+
+impl PartialOrd for LaxDate {
+    fn partial_cmp(&self, other: &LaxDate) -> Option<Ordering> {
+        let by_year = self.year.cmp(&other.year);
+        if by_year.is_ne() {
+            return Some(by_year);
+        }
+
+        let by_month = self.month?.cmp(&other.month?);
+        if by_month.is_ne() {
+            return Some(by_month);
+        }
+
+        Some(self.day?.cmp(&other.day?))
     }
 }
 
@@ -270,5 +271,18 @@ mod tests {
             let date = LaxDate::from_str(dbg!(&s)).unwrap();
             date.month().unwrap() == month
         }
+
+        fn text_lax_date_eq_partial_cmp(a: LaxDate, b: LaxDate) -> bool {
+            a.eq(&b) == (a.partial_cmp(&b) == Some(Ordering::Equal))
+        }
+
+        fn test_lax_date_partial_ord_transitivity(a: LaxDate, b: LaxDate, c: LaxDate) -> bool {
+            !(a < b && b < c) || (a < c)
+        }
+
+        fn test_lax_date_partial_ord_duality(a: LaxDate, b: LaxDate) -> bool {
+            (a < b) == (b > a)
+        }
+
     }
 }
