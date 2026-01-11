@@ -1,4 +1,4 @@
-use std::{cmp::min, convert::TryFrom, fmt, str::FromStr};
+use std::{cmp::min, convert::TryFrom, fmt, num::NonZeroU8, str::FromStr};
 
 use thiserror::Error;
 use time::{OffsetDateTime, PrimitiveDateTime};
@@ -11,11 +11,11 @@ pub enum InvalidDate {
     InvalidMonth,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct LaxDate {
     year: Year,
-    month: Option<u8>,
-    day: Option<u8>,
+    month: Option<NonZeroU8>,
+    day: Option<NonZeroU8>,
 }
 
 impl LaxDate {
@@ -25,7 +25,7 @@ impl LaxDate {
 
     pub fn month(self) -> Option<Month> {
         self.month
-            .map(|m| Month(self.year.0 * 12 + u16::from(m) - 1))
+            .map(|m| Month(self.year.0 * 12 + u16::from(m.get()) - 1))
     }
 
     pub fn tomorrow() -> LaxDate {
@@ -36,8 +36,8 @@ impl LaxDate {
         LaxDate {
             year: Year::try_from(u16::try_from(utc_date.year()).expect("not after u16::MAX"))
                 .expect("not after MAX_YEAR"),
-            month: Some(u8::from(utc_date.month()) - 1),
-            day: Some(utc_date.day()),
+            month: Some(NonZeroU8::new(u8::from(utc_date.month())).expect("1-based month")),
+            day: Some(NonZeroU8::new(utc_date.day()).expect("1-based day")),
         }
     }
 
@@ -77,9 +77,12 @@ impl FromStr for LaxDate {
             )?,
             month: parts
                 .next()
-                .and_then(|m| m.parse().ok())
-                .filter(|m| 1 <= *m && *m <= 12),
-            day: parts.next().and_then(|d| d.parse().ok()),
+                .and_then(|m| m.parse::<NonZeroU8>().ok())
+                .filter(|&m| m.get() <= 12),
+            day: parts
+                .next()
+                .and_then(|d| d.parse::<NonZeroU8>().ok())
+                .filter(|&d| d.get() <= 31),
         })
     }
 }
@@ -221,7 +224,7 @@ impl FromStr for Month {
 
 #[cfg(test)]
 mod tests {
-    use quickcheck::{Arbitrary, Gen};
+    use quickcheck::{Arbitrary, Gen, quickcheck};
 
     use super::*;
 
@@ -232,6 +235,40 @@ mod tests {
                     % (u16::from(Month::max_value()) - u16::from(Month::min_value()) + 1)
                     + u16::from(Month::min_value()),
             )
+        }
+    }
+
+    impl Arbitrary for Year {
+        fn arbitrary(g: &mut Gen) -> Year {
+            Year(u16::arbitrary(g) % (MAX_YEAR - MIN_YEAR + 1) + MIN_YEAR)
+        }
+    }
+
+    impl Arbitrary for LaxDate {
+        fn arbitrary(g: &mut Gen) -> LaxDate {
+            LaxDate {
+                year: Year::arbitrary(g),
+                month: NonZeroU8::new(u8::arbitrary(g) % (12 + 1)),
+                day: NonZeroU8::new(u8::arbitrary(g) % (31 + 1)),
+            }
+        }
+    }
+
+    quickcheck! {
+        fn test_lax_date_str_roundtrip(date: LaxDate) -> bool {
+            let s = date.to_string();
+            LaxDate::from_str(&s).unwrap() == date
+        }
+
+        fn test_month_str_roundtrip(month: Month) -> bool {
+            let s = month.to_string();
+            Month::from_str(&s).unwrap() == month
+        }
+
+        fn test_lax_date_month_str(month: Month) -> bool {
+            let s = month.to_string().replace('-', ".");
+            let date = LaxDate::from_str(dbg!(&s)).unwrap();
+            date.month().unwrap() == month
         }
     }
 }
