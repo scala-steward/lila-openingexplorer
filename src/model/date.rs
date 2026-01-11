@@ -255,6 +255,13 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_tomorrow_str_roundtrip() {
+        let tomorrow = LaxDate::tomorrow();
+        let s = tomorrow.to_string();
+        assert_eq!(LaxDate::from_str(&s).unwrap(), tomorrow);
+    }
+
     quickcheck! {
         fn test_lax_date_str_roundtrip(date: LaxDate) -> bool {
             let s = date.to_string();
@@ -283,6 +290,5 @@ mod tests {
         fn test_lax_date_partial_ord_duality(a: LaxDate, b: LaxDate) -> bool {
             (a < b) == (b > a)
         }
-
     }
 }
