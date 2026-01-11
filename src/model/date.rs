@@ -17,7 +17,7 @@ pub enum InvalidDate {
     InvalidMonth,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug)]
 pub struct LaxDate {
     year: Year,
     month: Option<NonZeroU8>,
@@ -85,6 +85,12 @@ impl PartialOrd for LaxDate {
         }
 
         Some(self.day?.cmp(&other.day?))
+    }
+}
+
+impl PartialEq for LaxDate {
+    fn eq(&self, other: &LaxDate) -> bool {
+        self.partial_cmp(other) == Some(Ordering::Equal)
     }
 }
 
@@ -265,7 +271,7 @@ mod tests {
     quickcheck! {
         fn test_lax_date_str_roundtrip(date: LaxDate) -> bool {
             let s = date.to_string();
-            LaxDate::from_str(&s).unwrap() == date
+            LaxDate::from_str(&s).unwrap().to_string() == s
         }
 
         fn test_month_str_roundtrip(month: Month) -> bool {
@@ -277,10 +283,6 @@ mod tests {
             let s = month.to_string().replace('-', ".");
             let date = LaxDate::from_str(dbg!(&s)).unwrap();
             date.month().unwrap() == month
-        }
-
-        fn text_lax_date_eq_partial_cmp(a: LaxDate, b: LaxDate) -> bool {
-            a.eq(&b) == (a.partial_cmp(&b) == Some(Ordering::Equal))
         }
 
         fn test_lax_date_partial_ord_transitivity(a: LaxDate, b: LaxDate, c: LaxDate) -> bool {
