@@ -7,7 +7,7 @@ use shakmaty::{
     san::San,
     uci::UciMove,
     variant::{Variant, VariantPosition},
-    zobrist::{Zobrist64, ZobristHash},
+    zobrist::Zobrist64,
 };
 
 use crate::api::Error;

@@ -1237,7 +1237,6 @@ mod tests {
         Chess, EnPassantMode, Position as _,
         uci::UciMove,
         variant::{Crazyhouse, KingOfTheHill, ThreeCheck, Variant, VariantPosition},
-        zobrist::ZobristHash as _,
     };
 
     use super::*;

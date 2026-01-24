@@ -309,7 +309,7 @@ impl LichessEntry {
                 games: thin_vec![(0, game_id)],
             };
         LichessEntry {
-            sub_entries: [(RawUciMove::from(uci), sub_entry)].into_iter().collect(),
+            sub_entries: [(RawUciMove::pack(uci), sub_entry)].into_iter().collect(),
             min_game_idx: Some(0),
             max_game_idx: Some(0),
         }
@@ -403,7 +403,7 @@ impl LichessEntry {
         let mut games: Vec<(RatingGroup, Speed, u64, UciMove, GameId)> = Vec::new();
 
         for (uci, sub_entry) in self.sub_entries {
-            let uci = UciMove::from(uci);
+            let uci = uci.unpack();
 
             let mut latest_game: Option<(u64, GameId)> = None;
             let mut stats = Stats::default();

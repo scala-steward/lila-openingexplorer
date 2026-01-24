@@ -6,7 +6,6 @@ use std::{
 use nohash_hasher::IntMap;
 use shakmaty::{
     Chess, Color, EnPassantMode, KnownOutcome, Position, uci::UciMove, variant::Variant,
-    zobrist::ZobristHash,
 };
 
 use crate::{

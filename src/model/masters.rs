@@ -123,7 +123,7 @@ impl MastersEntry {
     ) -> MastersEntry {
         MastersEntry {
             groups: [(
-                RawUciMove::from(uci),
+                RawUciMove::pack(uci),
                 MastersGroup {
                     stats: Stats::new_single(outcome, mover_rating),
                     games: thin_vec![(mover_rating.saturating_add(opponent_rating), id)],
@@ -193,7 +193,7 @@ impl MastersEntry {
         for (uci, group) in self.groups {
             total += &group.stats;
 
-            let uci = UciMove::from(uci);
+            let uci = uci.unpack();
 
             let single_game = if group.stats.is_single() {
                 group.games.iter().map(|(_, id)| *id).next()
@@ -266,7 +266,7 @@ mod tests {
         let mut deserialized = MastersEntry::default();
         deserialized.extend_from_reader(&mut reader);
 
-        let group = deserialized.groups.get(&RawUciMove::from(uci)).unwrap();
+        let group = deserialized.groups.get(&RawUciMove::pack(uci)).unwrap();
         assert_eq!(group.stats.draws(), 1);
         assert_eq!(group.games[0], (1600 + 1700, game));
     }

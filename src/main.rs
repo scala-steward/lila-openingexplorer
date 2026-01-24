@@ -29,11 +29,10 @@ use moka::future::Cache;
 use serde::Deserialize;
 use serde_with::{DisplayFromStr, serde_as};
 use shakmaty::{
-    Color, EnPassantMode,
+    Color, EnPassantMode, Position as _,
     san::{San, SanPlus},
     uci::UciMove,
     variant::VariantPosition,
-    zobrist::ZobristHash,
 };
 use tikv_jemallocator::Jemalloc;
 use tokio::{

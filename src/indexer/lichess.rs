@@ -14,7 +14,6 @@ use shakmaty::{
     san::San,
     uci::UciMove,
     variant::{Variant, VariantPosition},
-    zobrist::ZobristHash,
 };
 
 use crate::{

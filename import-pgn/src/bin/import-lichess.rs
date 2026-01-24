@@ -2,9 +2,9 @@ use std::{ffi::OsStr, fs::File, io, mem, ops::ControlFlow, path::PathBuf, thread
 
 use clap::Parser;
 use indicatif::{ProgressBar, ProgressDrawTarget, ProgressStyle};
-use pgn_reader::{KnownOutcome, RawTag, Reader, SanPlus, Skip, Visitor};
+use pgn_reader::{KnownOutcome, RawTag, Reader, SanPlus, Visitor};
 use serde::Serialize;
-use serde_with::{formats::SpaceSeparator, serde_as, DisplayFromStr, StringWithSeparator};
+use serde_with::{DisplayFromStr, StringWithSeparator, formats::SpaceSeparator, serde_as};
 use shakmaty::Color;
 use time::OffsetDateTime;
 
@@ -197,10 +197,6 @@ impl Visitor for Importer<'_> {
     fn san(&mut self, game: &mut Game, san: SanPlus) -> ControlFlow<Self::Output> {
         game.moves.push(san);
         ControlFlow::Continue(())
-    }
-
-    fn begin_variation(&mut self, _game: &mut Game) -> ControlFlow<Self::Output, Skip> {
-        ControlFlow::Continue(Skip(true)) // stay in the mainline
     }
 
     fn end_game(&mut self, game: Game) -> Self::Output {

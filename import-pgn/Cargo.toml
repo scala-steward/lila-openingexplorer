@@ -5,9 +5,9 @@ publish = false
 edition = "2021"
 
 [dependencies]
-pgn-reader = "0.28"
+pgn-reader = "0.29"
 btoi = "0.5"
-reqwest = { version = "0.12", features = ["blocking", "json"] }
+reqwest = { version = "0.13", features = ["blocking", "json"] }
 bzip2 = "0.6"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
@@ -17,4 +17,4 @@ crossbeam = "0.8"
 indicatif = "0.18"
 zstd = "0.13"
 time = "0.3"
-shakmaty = "0.29"
+shakmaty = "0.30"

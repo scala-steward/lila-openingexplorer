@@ -95,7 +95,7 @@ impl PlayerEntry {
             games: thin_vec![(0, game_id)],
         };
         PlayerEntry {
-            sub_entries: [(RawUciMove::from(uci), sub_entry)].into_iter().collect(),
+            sub_entries: [(RawUciMove::pack(uci), sub_entry)].into_iter().collect(),
             min_game_idx: Some(0),
             max_game_idx: Some(0),
         }
@@ -214,7 +214,7 @@ impl PlayerEntry {
                 total += &stats;
 
                 moves.push(PreparedMove {
-                    uci: UciMove::from(uci),
+                    uci: uci.unpack(),
                     average_rating: None,
                     average_opponent_rating: stats.average_rating(),
                     performance: stats.performance(color),
@@ -236,7 +236,7 @@ impl PlayerEntry {
             moves,
             recent_games: recent_games
                 .into_iter()
-                .map(|(_, uci, game)| (UciMove::from(uci), game))
+                .map(|(_, uci, game)| (uci.unpack(), game))
                 .collect(),
             top_games: Vec::new(),
         }
@@ -454,7 +454,7 @@ mod tests {
         assert_eq!(deserialized.max_game_idx, Some(2));
         let group = &deserialized
             .sub_entries
-            .get(&RawUciMove::from(uci_ab))
+            .get(&RawUciMove::pack(uci_ab))
             .unwrap()
             .bullet
             .rated;

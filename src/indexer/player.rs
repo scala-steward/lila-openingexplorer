@@ -10,7 +10,6 @@ use nohash_hasher::IntMap;
 use reqwest::StatusCode;
 use shakmaty::{
     ByColor, CastlingMode, KnownOutcome, Position, uci::UciMove, variant::VariantPosition,
-    zobrist::ZobristHash,
 };
 use tokio::{
     sync::{Semaphore, mpsc},
