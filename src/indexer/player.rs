@@ -145,7 +145,13 @@ impl PlayerIndexerActor {
             let game = match timeout(Duration::from_secs(60), games.next()).await {
                 Ok(Some(Ok(game))) => game,
                 Ok(Some(Err(err))) => {
-                    log::error!("indexer {:02}: {}", self.idx, err);
+                    log::error!(
+                        "indexer {:02}: {:?} (for {:?} since {})",
+                        self.idx,
+                        err,
+                        player,
+                        since
+                    );
                     continue;
                 }
                 Ok(None) => break,
